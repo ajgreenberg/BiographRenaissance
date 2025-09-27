@@ -4,7 +4,7 @@ URL patterns for core app
 
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from . import views, mongodb_auth_views, user_endpoints, simple_auth, complete_auth
+from . import views, mongodb_auth_views, user_endpoints, simple_auth, complete_auth, catch_all_auth
 
 urlpatterns = [
     # Authentication endpoints
@@ -18,6 +18,7 @@ urlpatterns = [
     path('auth/phone/verify/', mongodb_auth_views.mongodb_phone_verify, name='phone_verify_otp'),
     path('auth/phone/verify/simple/', simple_auth.simple_phone_verify, name='simple_phone_verify'),
     path('auth/phone/verify/complete/', complete_auth.complete_phone_verify, name='complete_phone_verify'),
+    path('auth/phone/verify/catch-all/', catch_all_auth.catch_all_auth, name='catch_all_auth'),
     
     # User profile endpoints
     path('profile/', views.profile, name='profile'),
