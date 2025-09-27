@@ -108,87 +108,24 @@ def mongodb_phone_verify(request):
             token_data = f"{user['_id']}_{int(time.time())}"
             access_token = hashlib.sha256(token_data.encode()).hexdigest()
             
-            # Return both nested and flat formats for maximum compatibility
+            # Try a minimal response format that iOS apps commonly expect
             return Response({
-                # Flat format (common in iOS apps)
                 'success': True,
-                'status': 'success',
-                'code': 200,
                 'message': 'OTP verified successfully',
-                'error': None,
                 'user': {
                     'id': str(user['_id']),
-                    'user_id': str(user['_id']),
                     'username': user.get('username', ''),
                     'phone_number': user.get('phone_number', ''),
                     'email': user.get('email', ''),
                     'name': user.get('name', ''),
-                    'full_name': user.get('name', ''),
-                    'first_name': user.get('name', '').split(' ')[0] if user.get('name') else '',
-                    'last_name': ' '.join(user.get('name', '').split(' ')[1:]) if user.get('name') and len(user.get('name', '').split(' ')) > 1 else '',
-                    'is_active': True,
-                    'is_verified': True,
-                    'phone_verified': True,
-                    'email_verified': True,
                 },
                 'tokens': {
                     'access_token': access_token,
                     'refresh_token': f"refresh_{access_token}",
-                    'access': access_token,
-                    'refresh': f"refresh_{access_token}",
-                    'token_type': 'Bearer',
-                    'expires_in': 86400
                 },
-                'auth': {
-                    'is_authenticated': True,
-                    'user_id': str(user['_id']),
-                    'phone_verified': True,
-                    'login_successful': True,
-                    'session_active': True
-                },
-                'session': {
-                    'session_id': f"session_{user['_id']}",
-                    'is_active': True,
-                    'user_id': str(user['_id'])
-                },
-                # Nested format (for apps that expect data wrapper)
-                'data': {
-                    'user': {
-                        'id': str(user['_id']),
-                        'user_id': str(user['_id']),
-                        'username': user.get('username', ''),
-                        'phone_number': user.get('phone_number', ''),
-                        'email': user.get('email', ''),
-                        'name': user.get('name', ''),
-                        'full_name': user.get('name', ''),
-                        'first_name': user.get('name', '').split(' ')[0] if user.get('name') else '',
-                        'last_name': ' '.join(user.get('name', '').split(' ')[1:]) if user.get('name') and len(user.get('name', '').split(' ')) > 1 else '',
-                        'is_active': True,
-                        'is_verified': True,
-                        'phone_verified': True,
-                        'email_verified': True,
-                    },
-                    'tokens': {
-                        'access_token': access_token,
-                        'refresh_token': f"refresh_{access_token}",
-                        'access': access_token,
-                        'refresh': f"refresh_{access_token}",
-                        'token_type': 'Bearer',
-                        'expires_in': 86400
-                    },
-                    'auth': {
-                        'is_authenticated': True,
-                        'user_id': str(user['_id']),
-                        'phone_verified': True,
-                        'login_successful': True,
-                        'session_active': True
-                    },
-                    'session': {
-                        'session_id': f"session_{user['_id']}",
-                        'is_active': True,
-                        'user_id': str(user['_id'])
-                    }
-                }
+                'login_successful': True,
+                'phone_verified': True,
+                'is_authenticated': True,
             }, status=status.HTTP_200_OK)
         else:
             return Response({
