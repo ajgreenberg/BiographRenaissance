@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!ner8+=ida8po7m^e!o8i_*zc^nduk)3o14(2ymx#m*oh*x_x^'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-!ner8+=ida8po7m^e!o8i_*zc^nduk)3o14(2ymx#m*oh*x_x^')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', 'biographrenaissance-production.up.railway.app', 'BiographRenaissance.railway.app']
 
 
 # Application definition
@@ -95,9 +96,12 @@ WSGI_APPLICATION = 'BiographRenaissance.wsgi.application'
 import os
 from urllib.parse import urlparse
 
+# MongoDB Configuration
+MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb+srv://admin:KiteFlyFour78*@biographrenaissance.zkfvhph.mongodb.net/BiographRenaissanceDB?retryWrites=true&w=majority')
+
 # Check if we're running on Railway (production)
 if os.getenv('RAILWAY_ENVIRONMENT'):
-    # Railway PostgreSQL database
+    # Railway PostgreSQL database (for Django admin/auth)
     DATABASE_URL = os.getenv('DATABASE_URL')
     if DATABASE_URL:
         db_url = urlparse(DATABASE_URL)
