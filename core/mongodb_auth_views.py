@@ -108,13 +108,10 @@ def mongodb_phone_verify(request):
             token_data = f"{user['_id']}_{int(time.time())}"
             access_token = hashlib.sha256(token_data.encode()).hexdigest()
             
-            # Try adding common iOS app expected fields
+            # Return exactly what the original BioGraph API would return
             return Response({
                 'success': True,
-                'status': 'success',
-                'code': 200,
-                'result': 'success',
-                'message': 'OTP verified successfully',
+                'message': 'Login successful',
                 'user': {
                     'id': str(user['_id']),
                     'username': user.get('username', ''),
@@ -122,17 +119,11 @@ def mongodb_phone_verify(request):
                     'email': user.get('email', ''),
                     'name': user.get('name', ''),
                 },
-                'tokens': {
-                    'access_token': access_token,
-                    'refresh_token': f"refresh_{access_token}",
-                },
+                'access_token': access_token,
+                'refresh_token': f"refresh_{access_token}",
                 'login_successful': True,
                 'phone_verified': True,
                 'is_authenticated': True,
-                'authenticated': True,
-                'verified': True,
-                'proceed': True,
-                'next_screen': 'main',
             }, status=status.HTTP_200_OK)
         else:
             return Response({
