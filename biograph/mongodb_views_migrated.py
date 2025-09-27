@@ -17,7 +17,7 @@ from mongodb_client import mongodb_client
 logger = logging.getLogger(__name__)
 
 def convert_media_path_to_url(media_path):
-    """Convert relative media path to full URL"""
+    """Convert relative media path to pre-signed S3 URL"""
     if not media_path:
         return None
     
@@ -25,24 +25,62 @@ def convert_media_path_to_url(media_path):
     if media_path.startswith('http'):
         return media_path
     
-    # Convert relative path to full URL
-    # Example: users/BioGraph/profile/... -> /media/photos/...
-    if media_path.startswith('users/BioGraph/profile/'):
-        # Extract filename from path
-        filename = os.path.basename(media_path)
-        return f"{settings.MEDIA_URL}photos/{filename}"
-    elif media_path.startswith('users/BioGraph/recording/'):
-        # Extract filename from path
-        filename = os.path.basename(media_path)
-        return f"{settings.MEDIA_URL}audio/{filename}"
-    elif media_path.startswith('users/BioGraph/video/'):
-        # Extract filename from path
-        filename = os.path.basename(media_path)
-        return f"{settings.MEDIA_URL}videos/{filename}"
-    
-    # Default: assume it's a photo
-    filename = os.path.basename(media_path)
-    return f"{settings.MEDIA_URL}photos/{filename}"
+    try:
+        import boto3
+        from botocore.exceptions import ClientError
+        import os
+        
+        # Get AWS credentials from environment variables
+        aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+        aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+        aws_region = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
+        bucket_name = os.getenv('AWS_STORAGE_BUCKET_NAME', 'biographrenaissance')
+        
+        if not aws_access_key or not aws_secret_key:
+            logger.warning("AWS credentials not configured, returning None for media URL")
+            return None
+        
+        # Create S3 client
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key,
+            region_name=aws_region
+        )
+        
+        # Determine S3 object key based on path
+        if media_path.startswith('users/BioGraph/profile/'):
+            filename = os.path.basename(media_path)
+            object_key = f"photos/{filename}"
+        elif media_path.startswith('users/BioGraph/recording/'):
+            filename = os.path.basename(media_path)
+            object_key = f"audio/{filename}"
+        elif media_path.startswith('users/BioGraph/video/'):
+            filename = os.path.basename(media_path)
+            object_key = f"videos/{filename}"
+        else:
+            # Default: assume it's a photo
+            filename = os.path.basename(media_path)
+            object_key = f"photos/{filename}"
+        
+        # Generate pre-signed URL (valid for 1 hour)
+        try:
+            presigned_url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': bucket_name, 'Key': object_key},
+                ExpiresIn=3600  # 1 hour
+            )
+            return presigned_url
+        except ClientError as e:
+            logger.error(f"Error generating pre-signed URL for {object_key}: {e}")
+            return None
+            
+    except ImportError:
+        logger.error("boto3 not installed, cannot generate pre-signed URLs")
+        return None
+    except Exception as e:
+        logger.error(f"Error in convert_media_path_to_url: {e}")
+        return None
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
