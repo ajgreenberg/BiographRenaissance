@@ -108,9 +108,12 @@ def mongodb_phone_verify(request):
             token_data = f"{user['_id']}_{int(time.time())}"
             access_token = hashlib.sha256(token_data.encode()).hexdigest()
             
-            # Try a minimal response format that iOS apps commonly expect
+            # Try adding common iOS app expected fields
             return Response({
                 'success': True,
+                'status': 'success',
+                'code': 200,
+                'result': 'success',
                 'message': 'OTP verified successfully',
                 'user': {
                     'id': str(user['_id']),
@@ -126,6 +129,10 @@ def mongodb_phone_verify(request):
                 'login_successful': True,
                 'phone_verified': True,
                 'is_authenticated': True,
+                'authenticated': True,
+                'verified': True,
+                'proceed': True,
+                'next_screen': 'main',
             }, status=status.HTTP_200_OK)
         else:
             return Response({
