@@ -103,23 +103,34 @@ def mongodb_phone_verify(request):
             # In production, verify OTP with Twilio here
             # For now, accept any OTP for testing
             
-            # Generate proper JWT tokens
-            # Since we're using MongoDB, we need to create a JWT manually
+            # Generate proper JWT tokens using Django SimpleJWT
+            # First, create or get a Django User instance from MongoDB data
+            from django.contrib.auth import get_user_model
             
-            # Create JWT payload
-            payload = {
-                'user_id': str(user['_id']),
-                'username': user.get('username', ''),
-                'phone_number': user.get('phone_number', ''),
-                'email': user.get('email', ''),
-                'exp': int(time.time()) + 86400,  # 24 hours
-                'iat': int(time.time()),
-                'token_type': 'access'
-            }
+            User = get_user_model()
             
-            # Generate JWT token
-            access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-            refresh_token = f"refresh_{access_token}"
+            # Try to find existing Django user by phone number
+            django_user = None
+            try:
+                django_user = User.objects.get(phone_number=user.get('phone_number', ''))
+            except User.DoesNotExist:
+                # Create a new Django user from MongoDB data
+                django_user = User.objects.create(
+                    username=user.get('username', f"user_{user['_id']}"),
+                    email=user.get('email', ''),
+                    phone_number=user.get('phone_number', ''),
+                    first_name=user.get('name', '').split(' ')[0] if user.get('name') else '',
+                    last_name=' '.join(user.get('name', '').split(' ')[1:]) if user.get('name') and len(user.get('name', '').split(' ')) > 1 else '',
+                    migrated_from_old_system=True,
+                    old_user_id=str(user['_id']),
+                    is_phone_verified=True,
+                    is_active=True
+                )
+            
+            # Generate proper JWT tokens using Django SimpleJWT
+            refresh = RefreshToken.for_user(django_user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
             
             # Return BOTH formats the iOS app expects
             return Response({
