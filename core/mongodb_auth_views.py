@@ -109,17 +109,31 @@ def mongodb_phone_verify(request):
             access_token = hashlib.sha256(token_data.encode()).hexdigest()
             
             return Response({
+                'success': True,
                 'message': 'OTP verified successfully',
-                'user': {
-                    'id': str(user['_id']),
-                    'username': user.get('username', ''),
-                    'phone_number': user.get('phone_number', ''),
-                    'email': user.get('email', ''),
-                    'name': user.get('name', '')
-                },
-                'tokens': {
-                    'access': access_token,
-                    'refresh': f"refresh_{access_token}"
+                'data': {
+                    'user': {
+                        'id': str(user['_id']),
+                        'user_id': str(user['_id']),
+                        'username': user.get('username', ''),
+                        'phone_number': user.get('phone_number', ''),
+                        'email': user.get('email', ''),
+                        'name': user.get('name', ''),
+                        'full_name': user.get('name', ''),
+                        'first_name': user.get('name', '').split(' ')[0] if user.get('name') else '',
+                        'last_name': ' '.join(user.get('name', '').split(' ')[1:]) if user.get('name') and len(user.get('name', '').split(' ')) > 1 else '',
+                    },
+                    'tokens': {
+                        'access_token': access_token,
+                        'refresh_token': f"refresh_{access_token}",
+                        'access': access_token,
+                        'refresh': f"refresh_{access_token}"
+                    },
+                    'auth': {
+                        'is_authenticated': True,
+                        'user_id': str(user['_id']),
+                        'phone_verified': True
+                    }
                 }
             }, status=status.HTTP_200_OK)
         else:
