@@ -17,9 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+import minimal_app
+import debug_mongodb
 
 def api_root(request):
     return JsonResponse({
@@ -52,6 +56,12 @@ urlpatterns = [
     # Root API endpoint
     path('', api_root, name='api-root'),
     
+    # Minimal health check (no MongoDB imports)
+    path('health/', minimal_app.minimal_health, name='minimal-health'),
+    
+    # Debug MongoDB connection
+    path('debug-mongodb/', debug_mongodb.debug_mongodb, name='debug-mongodb'),
+    
     # Admin
     path('admin/', admin.site.urls),
     
@@ -67,3 +77,6 @@ urlpatterns = [
     # Django Allauth URLs
     path('accounts/', include('allauth.urls')),
 ]
+
+# Serve media files (both development and production for now)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

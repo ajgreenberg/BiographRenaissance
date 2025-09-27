@@ -8,11 +8,41 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import JsonResponse
+from django.conf import settings
 import logging
+import os
 
 from mongodb_client import mongodb_client
 
 logger = logging.getLogger(__name__)
+
+def convert_media_path_to_url(media_path):
+    """Convert relative media path to full URL"""
+    if not media_path:
+        return None
+    
+    # If it's already a full URL, return as is
+    if media_path.startswith('http'):
+        return media_path
+    
+    # Convert relative path to full URL
+    # Example: users/BioGraph/profile/... -> /media/photos/...
+    if media_path.startswith('users/BioGraph/profile/'):
+        # Extract filename from path
+        filename = os.path.basename(media_path)
+        return f"{settings.MEDIA_URL}photos/{filename}"
+    elif media_path.startswith('users/BioGraph/recording/'):
+        # Extract filename from path
+        filename = os.path.basename(media_path)
+        return f"{settings.MEDIA_URL}audio/{filename}"
+    elif media_path.startswith('users/BioGraph/video/'):
+        # Extract filename from path
+        filename = os.path.basename(media_path)
+        return f"{settings.MEDIA_URL}videos/{filename}"
+    
+    # Default: assume it's a photo
+    filename = os.path.basename(media_path)
+    return f"{settings.MEDIA_URL}photos/{filename}"
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -72,9 +102,9 @@ def mongodb_biograph_list_migrated(request):
                 'biograph_type': biograph.get('biograph_type', '1'),
                 'created_date': biograph.get('created_date', '').isoformat() if biograph.get('created_date') else '',
                 'updated_date': biograph.get('updated_date', '').isoformat() if biograph.get('updated_date') else '',
-                'photo_url': biograph.get('photo_url'),
-                'record_url': biograph.get('record_url'),
-                'video_url': biograph.get('video_url'),
+                'photo_url': convert_media_path_to_url(biograph.get('photo_url')),
+                'record_url': convert_media_path_to_url(biograph.get('record_url')),
+                'video_url': convert_media_path_to_url(biograph.get('video_url')),
                 'record_text': biograph.get('record_text', ''),
                 'record_time': biograph.get('record_time', 0),
                 'words_count': biograph.get('words_count', ''),
