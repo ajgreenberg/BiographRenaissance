@@ -4,7 +4,7 @@ URL patterns for core app
 
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from . import views
+from . import views, mongodb_auth_views
 
 urlpatterns = [
     # Authentication endpoints
@@ -14,8 +14,8 @@ urlpatterns = [
     
     # Phone authentication endpoints (compatible with existing BioGraph)
     path('auth/phone/register/', views.phone_register, name='phone_register'),
-    path('auth/phone/login/', views.phone_login, name='phone_login'),
-    path('auth/phone/verify/', views.phone_verify_otp, name='phone_verify_otp'),
+    path('auth/phone/login/', mongodb_auth_views.mongodb_phone_login, name='phone_login'),
+    path('auth/phone/verify/', mongodb_auth_views.mongodb_phone_verify, name='phone_verify_otp'),
     
     # User profile endpoints
     path('profile/', views.profile, name='profile'),
