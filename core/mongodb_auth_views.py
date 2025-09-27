@@ -110,6 +110,7 @@ def mongodb_phone_verify(request):
             
             # Return the exact format the iOS app expects
             return Response({
+                'success': True,
                 'statusCode': True,
                 'responseData': {
                     'access_token': access_token,
