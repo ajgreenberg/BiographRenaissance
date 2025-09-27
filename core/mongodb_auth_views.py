@@ -7,8 +7,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
+from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
+import jwt
+import time
 from mongodb_client import mongodb_client
 
 logger = logging.getLogger(__name__)
@@ -100,13 +103,23 @@ def mongodb_phone_verify(request):
             # In production, verify OTP with Twilio here
             # For now, accept any OTP for testing
             
-            # Generate a simple token for now (we'll implement proper JWT later)
-            import hashlib
-            import time
+            # Generate proper JWT tokens
+            # Since we're using MongoDB, we need to create a JWT manually
             
-            # Create a simple token based on user ID and timestamp
-            token_data = f"{user['_id']}_{int(time.time())}"
-            access_token = hashlib.sha256(token_data.encode()).hexdigest()
+            # Create JWT payload
+            payload = {
+                'user_id': str(user['_id']),
+                'username': user.get('username', ''),
+                'phone_number': user.get('phone_number', ''),
+                'email': user.get('email', ''),
+                'exp': int(time.time()) + 86400,  # 24 hours
+                'iat': int(time.time()),
+                'token_type': 'access'
+            }
+            
+            # Generate JWT token
+            access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+            refresh_token = f"refresh_{access_token}"
             
             # Return BOTH formats the iOS app expects
             return Response({
