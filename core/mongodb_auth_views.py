@@ -114,7 +114,7 @@ def mongodb_phone_verify(request):
                 'responseData': {
                     'access_token': access_token,
                     'refresh_token': f"refresh_{access_token}",
-                    'user': {
+                    'user_data': {
                         'id': str(user['_id']),
                         'username': user.get('username', ''),
                         'phone_number': user.get('phone_number', ''),
