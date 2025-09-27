@@ -69,9 +69,19 @@ def mongodb_phone_verify(request):
         country_code = data.get('country_code', '1')
         otp_code = data.get('otp_code')
         
+        # Debug: Log what we received
+        logger.info(f"OTP verify request data: {data}")
+        logger.info(f"Phone: {phone_number}, Country: {country_code}, OTP: {otp_code}")
+        
         if not phone_number or not otp_code:
             return Response({
-                'error': 'Phone number and OTP code are required'
+                'error': 'Phone number and OTP code are required',
+                'debug': {
+                    'received_data': data,
+                    'phone_number': phone_number,
+                    'country_code': country_code,
+                    'otp_code': otp_code
+                }
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Try different phone number formats
