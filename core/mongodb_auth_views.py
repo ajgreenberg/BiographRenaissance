@@ -18,8 +18,9 @@ def mongodb_phone_login(request):
     """Phone number login endpoint using MongoDB"""
     try:
         data = request.data
-        phone_number = data.get('phone_number')
-        country_code = data.get('country_code', '1')
+        # Try different parameter names that iOS app might use
+        phone_number = data.get('phone_number') or data.get('phone') or data.get('phoneNumber')
+        country_code = data.get('country_code') or data.get('countryCode', '1')
         
         if not phone_number:
             return Response({
@@ -65,9 +66,10 @@ def mongodb_phone_verify(request):
     """Phone OTP verification endpoint using MongoDB"""
     try:
         data = request.data
-        phone_number = data.get('phone_number')
-        country_code = data.get('country_code', '1')
-        otp_code = data.get('otp_code')
+        # Try different parameter names that iOS app might use
+        phone_number = data.get('phone_number') or data.get('phone') or data.get('phoneNumber')
+        country_code = data.get('country_code') or data.get('countryCode', '1')
+        otp_code = data.get('otp_code') or data.get('otp') or data.get('otpCode') or data.get('code')
         
         # Debug: Log what we received
         logger.info(f"OTP verify request data: {data}")
