@@ -4,7 +4,7 @@ URL patterns for core app
 
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from . import views, mongodb_auth_views
+from . import views, mongodb_auth_views, user_endpoints
 
 urlpatterns = [
     # Authentication endpoints
@@ -29,4 +29,8 @@ urlpatterns = [
     
     # User search
     path('users/', views.UserListView.as_view(), name='user_list'),
+    
+    # User endpoints for iOS app
+    path('user/profile/', user_endpoints.user_profile, name='user_profile'),
+    path('user/biographs/', user_endpoints.user_biographs, name='user_biographs'),
 ]
