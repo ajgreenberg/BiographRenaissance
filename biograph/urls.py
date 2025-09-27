@@ -6,6 +6,9 @@ from django.urls import path
 from . import mongodb_views, mongodb_views_migrated, simple_test, health_check
 
 urlpatterns = [
+    # Root endpoint for iOS app compatibility
+    path('', mongodb_views_migrated.mongodb_biograph_list_migrated, name='biograph-list-root'),
+    
     # Health check endpoint (no MongoDB required)
     path('health/', health_check.health_check, name='health-check'),
     
