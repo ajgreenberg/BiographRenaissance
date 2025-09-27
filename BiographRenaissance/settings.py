@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-!ner8+=ida8po7m^e!o8i_*zc^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['*', 'biographrenaissance-production.up.railway.app', 'BiographRenaissance.railway.app']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',') if os.getenv('ALLOWED_HOSTS') else ['*', 'biographrenaissance-production.up.railway.app', 'BiographRenaissance.railway.app']
 
 
 # Application definition
