@@ -108,9 +108,23 @@ def mongodb_phone_verify(request):
             token_data = f"{user['_id']}_{int(time.time())}"
             access_token = hashlib.sha256(token_data.encode()).hexdigest()
             
-            # Return the exact format the iOS app expects
+            # Return BOTH formats the iOS app expects
             return Response({
-                'success': True,
+                # New Railway format
+                'message': 'Phone verification successful',
+                'tokens': {
+                    'access': access_token,
+                    'refresh': f"refresh_{access_token}",
+                },
+                'user': {
+                    'id': str(user['_id']),
+                    'username': user.get('username', ''),
+                    'phone_number': user.get('phone_number', ''),
+                    'email': user.get('email', ''),
+                    'name': user.get('name', ''),
+                },
+                # Legacy format
+                'status': True,
                 'statusCode': True,
                 'responseData': {
                     'access_token': access_token,
