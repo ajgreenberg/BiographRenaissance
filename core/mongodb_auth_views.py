@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.http import JsonResponse
+from rest_framework_simplejwt.tokens import RefreshToken
 import logging
 from mongodb_client import mongodb_client
 
@@ -98,6 +99,15 @@ def mongodb_phone_verify(request):
         if user:
             # In production, verify OTP with Twilio here
             # For now, accept any OTP for testing
+            
+            # Generate a simple token for now (we'll implement proper JWT later)
+            import hashlib
+            import time
+            
+            # Create a simple token based on user ID and timestamp
+            token_data = f"{user['_id']}_{int(time.time())}"
+            access_token = hashlib.sha256(token_data.encode()).hexdigest()
+            
             return Response({
                 'message': 'OTP verified successfully',
                 'user': {
@@ -108,8 +118,8 @@ def mongodb_phone_verify(request):
                     'name': user.get('name', '')
                 },
                 'tokens': {
-                    'access': 'mock_access_token',
-                    'refresh': 'mock_refresh_token'
+                    'access': access_token,
+                    'refresh': f"refresh_{access_token}"
                 }
             }, status=status.HTTP_200_OK)
         else:
