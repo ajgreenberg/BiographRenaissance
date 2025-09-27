@@ -111,6 +111,7 @@ def mongodb_phone_verify(request):
             # Return exactly what the original BioGraph API would return
             return Response({
                 'success': True,
+                'status': 'success',
                 'message': 'Login successful',
                 'user': {
                     'id': str(user['_id']),
