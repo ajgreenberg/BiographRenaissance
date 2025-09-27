@@ -112,6 +112,7 @@ def mongodb_phone_verify(request):
             return Response({
                 'success': True,
                 'status': 'success',
+                'result': 'success',
                 'message': 'Login successful',
                 'user': {
                     'id': str(user['_id']),
