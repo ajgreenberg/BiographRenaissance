@@ -3,9 +3,12 @@ URL patterns for biograph app
 """
 
 from django.urls import path
-from . import mongodb_views, mongodb_views_migrated, simple_test
+from . import mongodb_views, mongodb_views_migrated, simple_test, health_check
 
 urlpatterns = [
+    # Health check endpoint (no MongoDB required)
+    path('health/', health_check.health_check, name='health-check'),
+    
     # Simple test endpoint (no MongoDB required)
     path('simple-test/', simple_test.simple_test, name='simple-test'),
     

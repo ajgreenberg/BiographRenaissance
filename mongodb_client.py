@@ -18,31 +18,46 @@ class MongoDBClient:
     def __init__(self):
         self.client = None
         self.db = None
-        self.connect()
+        self._connected = False
+        # Don't connect immediately - use lazy connection
     
     def connect(self):
         """Connect to MongoDB Atlas"""
+        if self._connected:
+            return
+            
         try:
             # Get connection string from environment or use default
             mongodb_uri = os.getenv('MONGODB_URI', 'mongodb+srv://admin:KiteFlyFour78*@biographrenaissance.zkfvhph.mongodb.net/BiographRenaissanceDB?retryWrites=true&w=majority')
             
-            self.client = MongoClient(mongodb_uri)
+            self.client = MongoClient(mongodb_uri, serverSelectionTimeoutMS=5000)
             self.db = self.client.get_default_database()
             
-            # Test connection
+            # Test connection with timeout
             self.client.admin.command('ping')
+            self._connected = True
             logger.info(f"Connected to MongoDB: {self.db.name}")
             
         except Exception as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
-            raise
+            self._connected = False
+            # Don't raise exception - allow app to start without MongoDB
+    
+    def _ensure_connection(self):
+        """Ensure MongoDB connection is established"""
+        if not self._connected:
+            self.connect()
+        if not self._connected:
+            raise Exception("MongoDB connection failed")
     
     def get_users_collection(self):
         """Get users collection"""
+        self._ensure_connection()
         return self.db.AuthApp_usermodel
     
     def get_biographs_collection(self):
         """Get biographs collection"""
+        self._ensure_connection()
         return self.db.biographApp_biographmodel
     
     def find_user_by_phone(self, phone_number: str) -> Optional[Dict]:
